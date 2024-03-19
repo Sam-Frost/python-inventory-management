@@ -1,0 +1,120 @@
+{% extends "template.html" %} 
+
+{% block title %}Good Return List {% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block content %}
+
+<div class="content">
+    {% with navbar_links=navbar_values %}
+    {% include 'navbar.html' %}
+    {% endwith %}
+
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <style>
+                /* Define styles for the table and table cells */
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+            
+                th, td {
+                    border: 1px solid #000; /* Border style */
+                    padding: 8px; /* Padding for better spacing */
+                }
+            
+                th {
+                    background-color: #f2f2f2; /* Optional: Background color for header cells */
+                }
+            </style>
+            
+            <div class="col-12">
+                <div class="bg-secondary rounded h-100 p-4">
+                    <h6 class="mb-4">Good Returned From Employees</h6>
+                          <!-- Form for download -->
+                <div >
+                    <form id="hiddenForm" action="/download" method="post" style="display:none;">
+                        <input type="hidden" name="collection_name" value="good_return">
+                    </form>
+                    
+                    <!-- Visible button for download -->
+                    <button id="submitButton" class="btn btn-primary" >Download</button>
+                </div>
+            </br>
+                    
+                    <div class="table-responsive">
+                        <!-- Input field for search -->
+                        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search">
+                        <!-- Table -->
+                        <table class="table" id="good_return_list">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Full Name</th>
+                                    <th scope="col">Item Name</th>
+                                    <th scope="col">Part Number</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in data %}
+                                <tr>
+                                    <td>{{ item.employee_name }}</td>
+                                    <td>{{ item.item_name }}</td>
+                                    <td>{{ item.part_number }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Table End -->
+</div>  
+<!-- Content End -->
+
+
+<script>
+    document.getElementById('submitButton').addEventListener('click', function() {
+        // Submit the hidden form
+        document.getElementById('hiddenForm').submit();
+    });
+    // Wait for the document to be fully loaded
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the search input element
+        var searchInput = document.getElementById('searchInput');
+
+        // Add an event listener for the 'input' event on the search input
+        searchInput.addEventListener('input', function() {
+            // Get the value entered by the user and convert it to lowercase
+            var searchText = this.value.toLowerCase();
+
+            // Get all the rows in the table body
+            var rows = document.querySelectorAll('#good_return_list tbody tr');
+
+            // Loop through each row
+            rows.forEach(function(row) {
+                // Get the content of each cell in the row and convert it to lowercase
+                var cellText = row.textContent.toLowerCase();
+
+                // Check if any of the cell's content contains the search text
+                if (cellText.includes(searchText)) {
+                    // If it does, display the row
+                    row.style.display = '';
+                } else {
+                    // If it doesn't, hide the row
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+
+
+{% endblock %}
+
+

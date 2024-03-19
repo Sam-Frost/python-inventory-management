@@ -1,0 +1,223 @@
+{% extends "template.html" %}
+
+{% block title %}Assign Inventory{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block style %}
+
+
+<style>
+    h2 {
+        margin: 25px
+    }
+    table {
+        margin: 40px auto; /* Center the table horizontally */
+        border-collapse: collapse;
+        width: 80%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+        border: 1px solid #e0e0e0;
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+        color: #333;
+    }
+
+    td {
+        color: #666;
+    }
+
+    .content {
+        text-align: center; /* Center the content horizontally */
+    }
+
+    #assignButton {
+        margin-top: 20px; /* Add margin to the top of the button */
+        padding: 10px 20px; /* Add padding to the button */
+        background-color: #4CAF50; /* Green background */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    #assignButton:hover {
+        background-color: #45a049; /* Darker green on hover */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content">
+
+    {% with navbar_links=navbar_values %}
+    {% include 'navbar.html' %}
+    {% endwith %}
+
+    <h2>Assign Items to Employee</h2>
+    <label for="nameDropdown">Select Employee:</label>
+    <select id="nameDropdown">
+        <option value="">Select</option>
+        {% for name in full_names %}
+        <option value="{{ name }}">{{ name }}</option>
+        {% endfor %}
+    </select>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Item</th>
+                <th>Part No.</th>
+                <th>Total Quantity</th>
+                <th>Assign Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td><input type="checkbox" class="itemCheckbox" value="{{ item.item_name }}" /></td>
+                <td>{{ item.item_name }}</td>
+                <td>{{ item.part_number }}</td>
+                <td>{{ item.quantity }}</td>
+                <td><input type="number" name="quantity{{ loop.index }}" min="0" value="0" ></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="message"></div>
+
+    <button id="assignButton" onclick="assignNames()">Assign Items</button>
+    <!-- Add loading spinner -->
+    <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display: none;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<script>
+    function assignNames() {
+        var dropdown = document.getElementById("nameDropdown");
+        var selectedName = dropdown.value;
+
+        if (selectedName) {
+            var checkboxes = document.querySelectorAll('.itemCheckbox:checked');
+            var data = [];
+
+            var errorFlag = false; // Flag to track if an error occurred
+
+            checkboxes.forEach(function (checkbox) {
+                var itemRow = checkbox.closest('tr');
+                var itemName = itemRow.cells[1].textContent;
+                var partNumber = itemRow.cells[2].textContent;
+                var totalQuantity = parseInt(itemRow.cells[3].textContent); // Parse total quantity to integer
+                var quantityInput = itemRow.cells[4].querySelector('input');
+                var assignedQuantity = parseInt(quantityInput.value); // Parse assigned quantity to integer
+
+                // Check if assigned quantity is more than total quantity
+                if (assignedQuantity > totalQuantity) {
+                    errorFlag = true; // Set error flag to true
+                    alert('Assigned quantity cannot exceed total quantity for ' + itemName);
+                    return; // Exit the loop
+                }
+
+                if (assignedQuantity < 0) {
+                    errorFlag = true; // Set error flag to true
+                    alert('Assigned quantity cannot be less than zero for ' + itemName);
+                    return; // Exit the loop
+                }
+
+                var currentDate = new Date();
+                var day = currentDate.getDate();
+                var month = currentDate.getMonth() + 1; // January is 0, so we add 1
+                var year = currentDate.getFullYear();
+
+                // Ensure day and month are two digits
+                if (day < 10) {
+                    day = '0' + day;
+                }
+                if (month < 10) {
+                    month = '0' + month;
+                }
+
+                var formattedDate = day + '-' + month + '-' + year;
+                var loanNumber = generateLoanNumber(formattedDate, selectedName);
+
+                data.push({ itemName: itemName, assignedName: selectedName, quantity: assignedQuantity, partNumber: partNumber,date: formattedDate, loanNumber: loanNumber });
+            });
+
+            // If an error occurred, do not proceed with sending the data
+            if (errorFlag) {
+                return;
+            }
+
+            // Disable the button to prevent multiple clicks
+            var assignButton = document.getElementById("assignButton");
+            assignButton.disabled = true;
+
+            // Show loading spinner
+            document.getElementById("loadingSpinner").style.display = "inline-block";
+
+            // Send data to backend API endpoint
+            const url = window.my_website_url + "/assign_item";
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Handle success response from backend
+                console.log('Data sent successfully:', data);
+                alert('Data sent successfully!'); // Call function to display message
+                location.reload();
+            })
+            .catch(error => {
+                // Handle error
+                console.error('Error sending data to backend:', error);
+                alert('Error: Unable to send data. Please try again later.'); // Call function to display error message
+                // Enable the button back in case of an error
+                assignButton.disabled = false;
+                // Hide loading spinner
+                document.getElementById("loadingSpinner").style.display = "none";
+            });
+
+        }
+    }
+
+
+    // date + name 
+    function generateLoanNumber(dateString, name) {
+        // Remove spaces and special characters from the name
+        const cleanedName = name.replace(/[^a-zA-Z0-9]/g, '');
+
+        // Split the date string into day, month, and year
+        const [day, month, year] = dateString.split('-');
+
+        // Extract the last two digits of the year
+        const lastTwoDigitsOfYear = year.slice(-2);
+
+        // Combine the components to create the loan number
+        const loanNumber = `${cleanedName.toUpperCase()}-${day}${month}${lastTwoDigitsOfYear}`;
+
+        return loanNumber;
+    }
+</script>
+<div id="errorMessage" style="color: red;"></div>
+{% endblock %}

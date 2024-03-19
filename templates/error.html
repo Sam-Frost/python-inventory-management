@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Error</title>
+<style>
+    body, html {
+        height: 100%;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Align items to the top of the screen */
+        text-align: center;
+        font-family: Arial, sans-serif;
+    }
+    .container {
+        position: relative;
+        display: flex;
+        flex-direction: column; /* Align children vertically */
+        align-items: center; /* Align children horizontally */
+        margin-top: 20px; /* Adjust top margin for spacing */
+    }
+    .message {
+        font-size: 60px;
+        font-weight: bold;
+        color: black;
+        text-shadow: 2px 2px 4px #000000;
+        margin-top: 20px; /* Adjust top margin for spacing */
+    }
+    img {
+        width: 120%; /* Increase image size to 80% of container width */
+        max-width: 1200px; /* Limit maximum width to 400px */
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="message">
+        {{ msg }}
+    </div>
+    <img src="static/error_jpegs/{{ error_image }}" alt="Centered Image">
+</div>
+</body>
+</html>

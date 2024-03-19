@@ -1,0 +1,192 @@
+{% extends "template.html" %}
+{% block title %}Assign Assets{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block style %}
+<style>
+     h2 {
+        margin: 25px
+    }
+    table {
+        margin: 20px auto; /* Center the table horizontally */
+        border-collapse: collapse;
+        width: 80%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+        border: 1px solid #e0e0e0;
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+        color: #333;
+    }
+
+    td {
+        color: #666;
+    }
+
+    .content {
+        text-align: center; /* Center the content horizontally */
+    }
+
+    #assignButton {
+        margin-top: 20px; /* Add margin to the top of the button */
+        padding: 10px 20px; /* Add padding to the button */
+        background-color: #4CAF50; /* Green background */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    #assignButton:hover {
+        background-color: #45a049; /* Darker green on hover */
+    }
+
+    #loadingSpinner {
+        display: none; /* Initially hide the loading spinner */
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<!-- Content Start -->
+<div class="content">
+  {% with navbar_links=navbar_values %}
+  {% include 'navbar.html' %}
+  {% endwith %}
+
+  <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
+    <a href="/" class="navbar-brand d-flex d-lg-none me-4">
+      <h2 class="text-primary mb-0"><i class="fa fa-user-edit"></i></h2>
+    </a>
+  </nav>
+
+
+<h2>Assign Assets</h2>
+
+<label for="nameDropdown">Select Name:</label>
+<select id="nameDropdown">
+    <option value="">Select</option>
+    {% for name in names %}
+    <option value="{{ name }}">{{ name }}</option>
+    {% endfor %}
+</select>
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Assign</th>
+            <th>Asset Name</th>
+            <th>Asset Type</th>
+            <th>Serial Number</th>
+            <th>Total Quantity</th>
+            <th>Quantity</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for asset in assets %}
+        <tr>
+            <td><input type="checkbox" class="assetCheckbox" value="{{ asset.asset_name }}" /></td>
+            <td>{{ asset.asset_name }}</td>
+            <td>{{ asset.asset_type }}</td>
+            <td>{{ asset.serial_number }}</td>
+            <td>{{ asset.quantity }}</td>
+            <td><input type="number" name="quantity{{ loop.index }}" min="0" value="0" ></td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+<button style="text-align:center;" onclick="assignNames()" id="assignButton" >Assign Names</button>
+<!-- Add loading spinner -->
+<div id="loadingSpinner" class="spinner-border text-primary" role="status">
+  <span class="visually-hidden">Loading...</span>
+</div>
+
+<script>
+
+    function assignNames() {
+        // Disable the assign button
+        document.getElementById("assignButton").disabled = true;
+        // Show loading spinner
+        document.getElementById("loadingSpinner").style.display = "inline-block";
+
+        // Retrieve the selected name from the dropdown
+        var selectedName = document.getElementById('nameDropdown').value;
+        
+        // Generate loan number using current date and assigned name
+        var loan_number = generateLoanNumber(selectedName);
+        
+        var selectedAssets = [];
+        var checkboxes = document.querySelectorAll('.assetCheckbox:checked');
+        checkboxes.forEach(function(checkbox) {
+            var row = checkbox.parentNode.parentNode;
+            var asset_name = row.cells[1].textContent;
+            var asset_type = row.cells[2].textContent;
+            var serial_number = row.cells[3].textContent;
+            var quantity = row.cells[4].textContent;
+            var quantity = row.cells[5].querySelector('input[type="number"]').value;
+            selectedAssets.push({
+                asset_name: asset_name,
+                asset_type: asset_type,
+                serial_number: serial_number,
+                quantity: quantity,
+                assigned_name: selectedName,  // Include the selected name in the asset data
+                loan_number: loan_number  // Include the generated loan number in the asset data
+            });
+        });
+
+        // Send the data to the backend API
+        let url = window.my_website_url  + "/asset_assign"
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(selectedAssets)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Data submitted successfully!');
+                location.reload();
+            } else {
+                alert('Error submitting data.');
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+             alert('Error submitting data.');
+        })
+        .finally(() => {
+            // Enable the assign button
+            document.getElementById("assignButton").disabled = false;
+            // Hide loading spinner
+            document.getElementById("loadingSpinner").style.display = "none";
+        });
+    }
+
+    function generateLoanNumber(name) {
+        var currentDate = new Date();
+        var day = currentDate.getDate();
+        var month = currentDate.getMonth() + 1; // January is 0!
+        var year = currentDate.getFullYear();
+
+        // Ensure two digits for day and month
+        day = (day < 10) ? '0' + day : day;
+        month = (month < 10) ? '0' + month : month;
+
+        var formattedName = name.replace(/\s+/g, '').toUpperCase();
+        return day + month + year + '-' + formattedName;
+    }
+</script>
+{%endblock%}

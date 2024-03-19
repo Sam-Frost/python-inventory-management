@@ -1,0 +1,184 @@
+{% extends "template.html" %}
+{% block title %}Register Employee{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block content %}
+<div class="content">
+
+    {% with navbar_links=navbar_values %}
+    {% include 'navbar.html' %}
+    {% endwith %}
+  <div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+      <div class="col-sm-12 col-xl-12">
+        <div class="bg-secondary rounded h-100 p-4">
+          <h6 class="mb-4">Employee Registration</h6>
+          <!-- yahan par mein ne apna form add kiya hai  -->
+          <form id="employeeForm" class="mt-4">
+            <div class="form-group">
+              <label for="first_name">First Name:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="first_name"
+                name="first_name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="last_name">Last Name:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="last_name"
+                name="last_name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Phone:</label>
+              <input
+                type="tel"
+                class="form-control"
+                id="phone"
+                name="phone"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="position">Position:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="position"
+                name="position"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Password:</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="confirm_password">Confirm Password:</label>
+              <input
+                type="password"
+                class="form-control"
+                id="confirm_password"
+                name="confirm_password"
+                required
+              />
+            </div>
+            <div><br /></div>
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+              id="submitButton"
+            >
+              Submit
+            </button>
+            <!-- Add loading spinner -->
+            <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display: none;">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("employeeForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent the default form submission
+
+    // Disable the submit button
+    document.getElementById("submitButton").disabled = true;
+    // Show loading spinner
+    document.getElementById("loadingSpinner").style.display = "inline-block";
+
+    // Retrieve form field values
+    const firstName = document.getElementById("first_name").value;
+    const lastName = document.getElementById("last_name").value;
+    const phone = document.getElementById("phone").value;
+    const position = document.getElementById("position").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirm_password").value;
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      // Enable the submit button
+      document.getElementById("submitButton").disabled = false;
+      // Hide loading spinner
+      document.getElementById("loadingSpinner").style.display = "none";
+      return;
+    }
+
+    // Validate password complexity
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/;
+    if (!passwordRegex.test(password)) {
+      alert("Password must be at least 8 characters long, contain at least one uppercase letter, and contain at least one symbol (!@#$%^&*).");
+      // Enable the submit button
+      document.getElementById("submitButton").disabled = false;
+      // Hide loading spinner
+      document.getElementById("loadingSpinner").style.display = "none";
+      return;
+    }
+
+    // Construct the request body
+    const requestBody = JSON.stringify({
+      first_name: firstName,
+      last_name: lastName,
+      phone: phone,
+      position: position,
+      password: password
+    });
+
+    // Construct the request
+    const url = window.my_website_url + "/employee_registration";
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: requestBody
+    };
+
+    // Send the request
+    fetch(url, options)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Enable the submit button
+        document.getElementById("submitButton").disabled = false;
+        // Hide loading spinner
+        document.getElementById("loadingSpinner").style.display = "none";
+        alert(data.message);
+        location.reload();
+      })
+      .catch(error => {
+        console.error("There was a problem with the fetch operation:", error);
+        // Enable the submit button
+        document.getElementById("submitButton").disabled = false;
+        // Hide loading spinner
+        document.getElementById("loadingSpinner").style.display = "none";
+      });
+  });
+</script>
+
+{% endblock %}

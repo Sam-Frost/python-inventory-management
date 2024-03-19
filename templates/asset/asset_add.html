@@ -1,0 +1,110 @@
+{% extends "template.html" %}
+{% block title %}Add Asset{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block content %}
+
+<!-- Content Start -->
+<div class="content">
+  {% with navbar_links=navbar_values %}
+  {% include 'navbar.html' %}
+  {% endwith %}
+  <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
+    <a href="/" class="navbar-brand d-flex d-lg-none me-4">
+      <h2 class="text-primary mb-0"><i class="fa fa-user-edit"></i></h2>
+    </a>
+  </nav>
+  <!-- Navbar End -->
+   <!-- Form Start -->
+   <div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-sm-12 col-xl-12">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h3 class="mb-4" style="text-align: center;">Add Assets to Inventory</h3>
+                <form id="addAssetForm" class="mt-4">
+                    <div class="form-group">
+                        <label for="asset_name">Asset Name:</label>
+                        <input type="text" class="form-control" id="asset_name" name="asset_name" required> 
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="asset_type">Asset Type:</label>
+                        <input type="text" class="form-control" id="asset_type" name="asset_type" required>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="serial_number">Serial Number:</label>
+                        <input type="text" class="form-control" id="serial_number" name="serial_number" required>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label for="quantity">Quantity:</label>
+                        <input type="text" class="form-control" id="quantity" name="quantity" required>
+                    </div>
+                    <br>
+                    <button type="button" class="btn btn-primary" id="submitButton">Submit</button>
+                    <!-- Add loading spinner -->
+                    <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display: none;">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>            
+</div>
+<script>
+document.getElementById("submitButton").addEventListener("click", function() {
+    // Disable the submit button
+    document.getElementById("submitButton").disabled = true;
+    // Show loading spinner
+    document.getElementById("loadingSpinner").style.display = "inline-block";
+
+    // Retrieve form data
+    var asset_name = document.getElementById('asset_name').value;
+    var asset_type = document.getElementById('asset_type').value;
+    var serial_number = document.getElementById('serial_number').value;
+    var quantity = document.getElementById('quantity').value;
+
+    // Create JSON object
+    var assetData = {
+        asset_name: asset_name,
+        asset_type: asset_type,
+        serial_number: serial_number,
+        quantity: quantity
+    };  
+
+    let url = window.my_website_url + "/asset_add"
+    // Send POST request to server
+    fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(assetData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Enable the submit button
+            document.getElementById("submitButton").disabled = false;
+            // Hide loading spinner
+            document.getElementById("loadingSpinner").style.display = "none";
+            // alert(data.message); // Show the response message in an alert
+            if (data.status === 'exists') {
+                alert('asset already exists in the collection.');
+            } else {
+                alert('asset added successfully!');
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Enable the submit button
+            document.getElementById("submitButton").disabled = false;
+            // Hide loading spinner
+            document.getElementById("loadingSpinner").style.display = "none";
+            alert('An error occurred. Please try again.');
+        });
+});
+</script>
+
+  {% endblock %}

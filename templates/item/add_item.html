@@ -1,0 +1,115 @@
+{% extends "template.html" %}
+{% block title %}Add Inventory{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block content %}
+
+<!-- Content Start -->
+<div class="content">
+  {% with navbar_links=navbar_values %}
+  {% include 'navbar.html' %}
+  {% endwith %}
+  <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
+    <a href="/" class="navbar-brand d-flex d-lg-none me-4">
+      <h2 class="text-primary mb-0"><i class="fa fa-user-edit"></i></h2>
+    </a>
+  </nav>
+  <!-- Navbar End -->
+
+  <!-- Form Start -->
+  <div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+      <div class="col-sm-12 col-xl-12">
+        <div class="bg-secondary rounded h-100 p-4">
+          <h3 class="mb-4" style="text-align: center">Add Items In Inventory</h3>
+          <form action="" method="post" class="mt-4">
+            <div class="form-group">
+              <label for="item_name">Item Name:</label>
+              <input type="text" class="form-control" id="item_name" name="item_name" required />
+            </div>
+            <br />
+
+            <div class="form-group">
+              <label for="part_number">Part Number:</label>
+              <input type="text" class="form-control" id="part_number" name="part_number" required />
+            </div>
+            <br />
+            <div class="form-group">
+              <label for="quantity">Quantity:</label>
+              <input type="number" class="form-control" id="quantity" name="quantity" required />
+            </div>
+
+            <br />
+            <div class="form-group">
+              <label for="price">Price:</label>
+              <input type="number" class="form-control" id="price" name="price" required />
+            </div>
+            <br />
+          </form>
+          <button type="button" class="btn btn-primary" id="submitButton" onclick="submitForm()">Submit</button>
+          <!-- Add loading spinner -->
+          <div id="loadingSpinner" class="spinner-border text-primary" role="status" style="display: none;">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Function to handle form submission
+  function submitForm() {
+    // Retrieve form data
+    var item_name = document.getElementById("item_name").value;
+    var part_number = document.getElementById("part_number").value;
+    var quantity = document.getElementById("quantity").value;
+    var price = document.getElementById("price").value;
+
+    // Disable the button to prevent multiple clicks
+    var addButton = document.getElementById("submitButton");
+    addButton.disabled = true;
+
+    // Show loading spinner
+    document.getElementById("loadingSpinner").style.display = "inline-block";
+
+    // Construct the request body as JSON
+    var requestBody = JSON.stringify({
+      item_name: item_name,
+      part_number: part_number,
+      quantity: quantity,
+      price: price
+    });
+
+    // Send POST request to server
+    const url = window.my_website_url + "/add_item";
+    fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: requestBody,
+      })
+      .then((response) => response.json()) // Parse response as JSON
+      .then((data) => {
+        if (data.status === "exists") {
+          // Display alert if item already exists
+          alert("Item already exists in the collection.");
+        } else {
+          // Display success alert
+          alert("Item added successfully!");
+        }
+        // Reload the page to show updated data
+        location.reload();
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        // Display error alert
+        alert("An error occurred. Please try again.");
+        // Enable the button back in case of an error
+        addButton.disabled = false;
+        // Hide loading spinner
+        document.getElementById("loadingSpinner").style.display = "none";
+      });
+  }
+</script>
+{% endblock %}

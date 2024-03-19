@@ -1,0 +1,95 @@
+{% extends "template.html" %} 
+
+{% block title %}Approved Inventory{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block content %}
+<!-- Content Start -->
+<div class="content">
+            
+    <!-- Table Start -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="bg-secondary rounded h-100 p-4">
+                    <h6 class="mb-4">Approved Inventory</h6>
+                         <!-- Form for download -->
+                        <div >
+                            <form id="hiddenForm" action="/download" method="post" style="display:none;">
+                                <input type="hidden" name="collection_name" value="awaiting_approval">
+                            </form>
+                            
+                            <!-- Visible button for download -->
+                            <button id="submitButton" class="btn btn-primary" >Download</button>
+                        </div>
+                       </br>
+                       <div class="table-responsive">
+                        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search">
+                    
+                        <table id="inventoryTable" class="table">
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Employee</th>
+                                <th>Call No.</th>
+                                <th>TCR No.</th>
+                                <th>Items</th>
+                                <th>Price</th>
+                                <th>Customer</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for entry in data %}
+                            <tr>
+                                <td>{{ entry.date }}</td>
+                                <td>{{ entry.employee_name }}</td>
+                                <td>{{ entry.call_number }}</td>
+                                <td>{{ entry.tcr_number }}</td>
+                                <td>
+                                    <ol type='a'>
+                                        {% for item in entry['items'] %}
+                                        <li>{{ item['item_name'] }} x {{ item['quantity'] }}</li>
+                                        {% endfor %}
+                                    </ol>
+                                </td>
+                                <td>{{ entry.total_price }}</td>
+                                <td>{{ entry.customer_name }}</td>
+                                <td>{{ entry.status }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Table End -->
+
+</div>
+<!-- Content End -->
+<script>
+    document.getElementById('submitButton').addEventListener('click', function() {
+        // Submit the hidden form
+        document.getElementById('hiddenForm').submit();
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+        var searchInput = document.getElementById('searchInput');
+
+        searchInput.addEventListener('input', function() {
+            var searchText = this.value.toLowerCase();
+            var rows = document.querySelectorAll('#inventoryTable tbody tr');
+
+            rows.forEach(function(row) {
+                var cellText = row.textContent.toLowerCase();
+                if (cellText.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "template.html" %}
+
+{% block title %}Defective Inventory{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block content %}
+
+<!-- Content Start -->
+<div class="content">
+            
+    {% with navbar_links=navbar_values %}
+    {% include 'navbar.html' %}
+    {% endwith %}
+
+    <!-- Form Start -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-sm-12 col-xl-12">
+                <div class="bg-secondary rounded h-100 p-4">
+                    <h3 class="mb-4" style="text-align: center;">Defective Inventory Return</h3>
+                    <form id="defectiveForm" class="mt-4">
+                        <div class="form-group">
+                            <label for="item_name">Item Name:</label>
+                            <select class="form-control" id="item_name" name="item_name" required>
+                                <option value="">Select</option>
+                                {% for item_name in item_names %}
+                                <option value="{{ item_name }}">{{ item_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <br>
+                      
+                        <div class="form-group">
+                            <label for="part_no">Part Number:</label>
+                            <input type="text" class="form-control" id="part_no" name="part_no" required>
+                        </div>
+                        <br>
+
+                        <div class="form-group">
+                            <label for="call_number">Call Number:</label>
+                            <input type="text" class="form-control" id="call_number" name="call_number" required>
+                        </div>
+                        <br>
+                        
+                        <div class="form-group">
+                            <label for="quantity">Quantity:</label>
+                            <input type="text" class="form-control" id="quantity" name="quantity" required>
+                        </div>
+                        <br>
+                        
+                        <div class="form-group">
+                            <label for="employee_name">Employee Name:</label>
+                            <select class="form-control" id="employee_name" name="employee_name" required>
+                                <option value="">Select</option>
+                                {% for employee_name in employee_names %}
+                                <option value="{{ employee_name }}">{{ employee_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <br>
+                        
+                        <div class="form-group">
+                            <label for="employee_phone">Employee Phone:</label>
+                            <input type="text" class="form-control" id="employee_phone" name="employee_phone" required>
+                        </div>
+                        <br>
+                        
+                        <button type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+                    </form>
+                </div> 
+            </div>
+        </div>
+    </div>
+    <script>
+        function submitForm() {
+            var currentDate = new Date();
+            var day = currentDate.getDate();
+            var month = currentDate.getMonth() + 1; // January is 0, so we add 1
+            var year = currentDate.getFullYear();
+            
+            // Ensure day and month are two digits
+            if (day < 10) {
+                day = '0' + day;
+            }
+            if (month < 10) {
+                month = '0' + month;
+            }
+            
+            var formattedDate = day + '-' + month + '-' + year;
+
+            var formData = {
+                item_name: document.getElementById('item_name').value,
+                part_no: document.getElementById('part_no').value,
+                quantity: document.getElementById('quantity').value,
+                employee_name: document.getElementById('employee_name').value,
+                call_number: document.getElementById('call_number').value,
+                employee_phone: document.getElementById('employee_phone').value,
+                formatted_date: formattedDate // Add formatted date to form data
+            };
+            
+            const url = window.my_website_url + "/defective_in";
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.msg); // Display the response message
+                location.reload(); // Reload the page after submission
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    </script>
+</div>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "template.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block user %} {{name}}  {% endblock %}
+
+{% block content %}
+
+<div class="content">
+   
+
+    <!-- Table Start -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+           
+            
+            <div class="col-12">
+                <div class="bg-secondary rounded h-100 p-4">
+                    <h6 class="mb-4">Recent Goods Assigned</h6>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                <!-- <th scope="col">#</th>? -->
+                                <th scope="col">Item</th>
+                                <th scope="col">Loan Number</th>
+                                <th scope="col">Employee</th>
+                                <th scope="col">Quantity</th>
+                                <th scope="col">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in inventory %} {# Display only the recent 10 fields #}
+                                <tr>
+                                    <td>{{ item.item_name }}</td>
+                                    <td>{{ item.loan_number }}</td>
+                                    <td>{{ item.employee_name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.date }}</td>
+                                    
+                                </tr>
+                                {% endfor %}
+                            
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Table End -->
+
+</div>
+
+
+{% endblock %}

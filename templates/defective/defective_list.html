@@ -1,0 +1,115 @@
+{% extends "template.html" %} 
+
+{% block title %}Defective Inventory List{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block content %}
+<div class="content">
+    {% with navbar_links=navbar_values %}
+    {% include 'navbar.html' %}
+    {% endwith %}
+    <div class="container-fluid pt-4 px-4">
+        <div class="row mt-4">
+            <div class="col">
+                <div class="bg-secondary rounded p-4">
+                    <h3 class="mb-4" style="text-align: center;">Defective Inventory</h3>
+                  <!-- Form for download -->
+                  <div >
+                    <form id="hiddenForm" action="/download" method="post" style="display:none;">
+                        <input type="hidden" name="collection_name" value="defective_items">
+                    </form>
+                    
+                    <!-- Visible button for download -->
+                    <button id="submitButton" class="btn btn-primary" >Download</button>
+                </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                  
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Part Number</th>
+                                    <th>Quantity</th>
+                                    <th>Returned By</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in data %}
+                                <tr>
+                                    <td>{{ item.item_name }}</td>
+                                    <td>{{ item.part_number }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.employee_name }}</td>
+                                    <td>{{ item.date }}</td>
+                                    <td>
+                                        {% if item.status == "send_to_vendor" %}
+                                        Send to Vendor
+                                    {% elif item.status == "write_off" %}
+                                        Write Off
+                                    {% else %}
+                                        <button class="btn btn-primary" onclick="sendData('{{ item.item_name }}', '{{ item.part_number }}', '{{ item.quantity }}', '{{ item.employee_name }}', '{{ item.emp_id }}','{{ item.date }}', 'sendToVendor')">Send to Vendor</button>
+                                        <button class="btn btn-primary" onclick="sendData('{{ item.item_name }}', '{{ item.part_number }}', '{{ item.quantity }}', '{{ item.employee_name }}', '{{ item.emp_id }}', '{{ item.date }}', 'writeOff')">Write Off</button>
+                                    {% endif %}                                    
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+    
+    <script>
+        document.getElementById('submitButton').addEventListener('click', function() {
+            // Submit the hidden form
+            document.getElementById('hiddenForm').submit();
+        });
+
+
+        function sendData(itemName, partNo, quantity, employee_name, emp_id, date, action) {
+            const data = {
+                itemName: itemName,
+                partNo: partNo,
+                quantity: quantity,
+                employee_name: employee_name,
+                emp_id: emp_id,
+                date: date
+            };
+    
+            // Decide the endpoint and page based on the action
+            let endpoint;
+            const url = window.my_website_url;
+            if (action === 'sendToVendor') {
+                endpoint = url + "/send_to_vendor";
+            } else if (action === 'writeOff') {
+                endpoint = url + "/write_off"; 
+            }
+    
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                // Handle response
+                console.log('Request sent successfully');
+                location.reload();
+            }).catch(error => {
+                // Handle error
+                console.error('Error sending request:', error);
+            });
+        }
+
+
+        
+    </script>
+    
+    
+
+{% endblock %}

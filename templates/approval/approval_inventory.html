@@ -1,0 +1,128 @@
+{% extends "template.html" %} 
+
+{% block title %}Approve Inventory{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block content %}
+<!-- Content Start -->
+<div class="content">
+            
+    <!-- Table Start -->
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="bg-secondary rounded h-100 p-4">
+                    <h6 class="mb-4">Approve Inventory</h6>
+                    <!-- Visible button for download -->
+                    <button id="submitButton" class="btn btn-primary" >Download</button>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Employee</th>
+                                    <th>Call No.</th>
+                                    <th>TCR No.</th>
+                                    <th>Items</th>
+                                    <th>Price</th>
+                                    <th>Customer</th>
+                                    <th>Brand</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in data %}
+                                <tr>
+                                    <td>{{ entry.date }}</td>
+                                    <td>{{ entry.employee_name }}</td>
+                                    <td>{{ entry.call_number }}</td>
+                                    <td>{{ entry.tcr_number }}</td>
+                                    <td>
+                                        <ol type='a'>
+                                            {% for item in entry['items'] %}
+                                            <li>{{ item['item_name'] }} x {{ item['quantity'] }}</li>
+                                            {% endfor %}
+                                        </ol>
+                                    </td>
+                                    <td>{{ entry.total_price }}</td>
+                                    <td>{{ entry.customer_name }}</td>
+                                    <td>{{ entry.brand }}</td>
+                                    <td>
+                                        {% if entry.status == "Approved" %}
+                                            {{ entry.status }}
+                                        {% elif entry.status == "Denied" %}
+                                            {{ entry.status }}
+                                        {% else %}
+                                            <button class="btn-approve" data-action="Approved" onclick="handleButtonClick(event, '{{ entry.emp_id }}')">Approve</button>
+                                            <button class="btn-decline" data-action="Denied" onclick="handleButtonClick(event, '{{ entry.emp_id }}')">Decline</button>
+                                        {% endif %}
+
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Table End -->
+    <form id="hiddenForm" action="/download" method="post" style="display:none;">
+        <input type="hidden" name="collection_name" value="approvals">
+    </form>
+
+</div>
+<!-- Content End -->
+
+<script>
+
+    document.getElementById('submitButton').addEventListener('click', function() {
+        // Submit the hidden form
+        document.getElementById('hiddenForm').submit();
+    });
+    function handleButtonClick(event, emp_id) {
+        var row = event.target.closest('tr');
+        var action = event.target.getAttribute('data-action');
+        var rowData = {
+            date: row.cells[0].innerText,
+            employee: row.cells[1].innerText,
+            callNo: row.cells[2].innerText,
+            tcrNo: row.cells[3].innerText,
+            items: row.cells[4].innerText,
+            price: row.cells[5].innerText,
+            customer: row.cells[6].innerText,
+            emp_id: emp_id,
+            action: action
+        };
+        sendDataToBackend(rowData);
+    }
+
+    function sendDataToBackend(rowData) {
+        let  url = window.my_website_url + "/approval_inventory"
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(rowData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Data sent successfully:', data);
+            alert(data.msg)
+            location.reload();
+            // Optionally, you can update the UI or perform other actions here
+        })
+        .catch(error => {
+            console.error('Error sending data to backend:', error);
+            // Handle errors here
+        });
+    }
+</script>
+
+{% endblock %}

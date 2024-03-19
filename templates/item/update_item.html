@@ -1,0 +1,143 @@
+{% extends "template.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block user %} {{name}}  {% endblock %}
+{% block content %}
+
+
+<!-- Content Start -->
+<div class="content">
+    {% with navbar_links=navbar_values %}
+    {% include 'navbar.html' %}
+    {% endwith %}
+        <style>
+            table {
+                /* border-collapse: collapse; */
+                margin-left: 15px;
+                width: 98%;
+                padding: 8px;
+                border-radius: 5px;
+                overflow: hidden;
+            }
+
+            th, td {
+                border: 1px solid #ddd;
+                padding: 12px; /* Increased padding for better spacing */
+                text-align: left;
+            }
+
+            th {
+                background-color: #f2f2f2;
+                font-weight: bold; /* Added font-weight for header cells */
+            }
+
+            tr:hover {
+                background-color: #f5f5f5; /* Lighter background color on hover */
+            }
+
+            /* Center the h2 element */
+            h2 {
+                margin-top: 3%;
+                text-align: center;
+            }
+        </style>
+        <h2>Update Inventory</h2>
+        </br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Part No.</th>
+                    <th>Total Quantity</th>
+                    <th>Quantity</th>
+                    <th>Edit Quantity</th> <!-- New column for edit/save button -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data %}
+                <tr>
+                    <td>{{ item.item_name }}</td>
+                    <td>{{ item.part_number }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td><input type="number" name="quantity{{ loop.index }}" min="0" value="0" readonly></td>
+                    <td>
+                        <button onclick="toggleQuantityEdit(this)">Edit</button>
+                        <button onclick="addData(this)">Add</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+</div>
+
+<script>
+
+    
+    function addData(button) {
+        var row = button.closest('tr');
+        var itemData = {
+            item_name: row.cells[0].textContent,
+            part_number: row.cells[1].textContent,
+            quantity: row.cells[3].querySelector('input').value
+        };
+
+        if(itemData['quantity'] < 0 ){
+            alert("Quantity  cannot be negative")
+        }
+        // Disable the button to prevent multiple clicks
+        button.disabled = true;
+    
+
+        const url = window.my_website_url + "/update_item";
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(itemData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Enable the button back after receiving a response
+
+            location.reload();
+    })
+        .catch(error => {
+            console.error('Error adding data:', error);
+            // Enable the button back in case of an error
+            location.reload();
+        });
+    }
+    function toggleQuantityEdit(button) {
+        var row = button.closest('tr');
+        console.log("function called ")
+        var quantityCell = row.cells[3]; // Assuming the quantity cell is always at index 3
+
+        var quantityInput = quantityCell.querySelector('input');
+        if (quantityInput) {
+            if (button.textContent === "Edit") {
+                quantityInput.readOnly = false;
+                //button.textContent = "Save";
+            } else {
+                // Save changes to backend
+                var newValue = quantityInput.value;
+                var itemData = {
+                    item_name: row.cells[0].textContent,
+                    part_number: row.cells[1].textContent,
+                    quantity: newValue
+                };
+                console.log("fetch called");
+              
+                // Update table cell
+                quantityCell.textContent = newValue;
+                button.textContent = "Edit";
+                quantityInput.readOnly = true;
+            }
+        }
+    }
+</script>
+{% endblock %}

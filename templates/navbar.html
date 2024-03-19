@@ -1,0 +1,35 @@
+<!-- navbar.html -->
+<div class="flex-container">
+    {% for link in navbar_links %}
+    <a href="{{ link.href }}" {% if link.status == 'active' %}class="active"{% endif %}><p>{{ link.text }}</p></a>
+    {% endfor %}
+</div>
+
+
+<style>
+    .flex-container {
+        position: relative;
+        top: 1%; /* Move the top edge to the middle of the parent element */
+        left: 27%; /* Move the left edge to the middle of the parent element */
+        margin-top: 1%;
+        display: flex;
+        flex-direction: row; /* Make it a horizontal flexbox */
+        justify-content: space-evenly;
+        border-radius: 30px; /* Add rounded border */
+        background-color: #1a1a25; /* Fill with a color */
+        padding: 5px; /* Adjust padding as needed */
+        height: 50px; /* Set fixed height */
+        width: 700px; /* Set fixed width */
+    }
+
+    .flex-container a {
+        text-decoration: none; /* Remove default underline for links */
+        padding: 10px; /* Adjust padding as needed */
+        color: #6c7392; /* Default text color */
+    }
+
+    .flex-container a.active {
+        color: white;
+        text-decoration: underline;
+    }
+</style>
