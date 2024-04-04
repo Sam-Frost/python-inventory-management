@@ -64,8 +64,8 @@ How to run the project:
     `http://localhost:5000` 
     
 3. Login using the credentials created while setting up:
-   `<br>ID : storegurgaon
-   <br>Password : storepassword `
+   <br>ID : storegurgaon
+   <br>Password : storepassword 
  
     
 
