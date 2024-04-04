@@ -27,7 +27,7 @@ This Flask-based web application serves as an inventory management system, while
 
 1.  Clone the repository:
 	
-	`git clone https://github.com/your-username/your-project.git` 
+	`git clone https://github.com/Sam-Frost/python-inventory-management.git` 
 	
 2.  Install dependencies:
 
